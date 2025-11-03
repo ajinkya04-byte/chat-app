@@ -5,16 +5,16 @@ const messageSchema= new Schema({
     senderId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
-        required:"true"
+        required:true
     },
-    reciiverId:{
+    receiverId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
-        required:"true"
+        required:true
     },
     message:{
         type:String,
-        required:"true"
+        required:true
     }
     
 },{timestamps:true});

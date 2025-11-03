@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 export const signup=async(req,res)=>{
     try{
-        const {fullname,username,password,confirmPassword,gender}=req.body;
+        const {fullName,username,password,confirmPassword,gender}=req.body;
 
         if (password!==confirmPassword) {
             return res.status(404).json({error:"Passwords dont match"})
@@ -24,11 +24,11 @@ export const signup=async(req,res)=>{
         const girlProfilePic=`https://avatar.iran.liara.run/public/girl`
 
         const newUser=new User({
-            fullname,
+            fullName,
             username,
             password:hashedPassword,
             gender,
-            profilepic:gender==="male" ? boyProfilePic:girlProfilePic
+            profilePic:gender==="male" ? boyProfilePic:girlProfilePic
         });
         if(newUser){
             await generateTokenandSetCookie(newUser._id,res);
@@ -36,9 +36,9 @@ export const signup=async(req,res)=>{
     
             res.status(201).json({
                 _id:newUser._id,
-                fullname:newUser.fullname,
+                fullName:newUser.fullName,
                 username:newUser.username,
-                profilepic:newUser.profilepic
+                profilePic:newUser.profilePic
             })
 
         }else{
@@ -64,9 +64,9 @@ export const login=async(req,res)=>{
 
         res.status(200).json({
             _id:user._id,
-            fullname:user.fullname,
+            fullName:user.fullName,
             username:user.username,
-            profilepic:user.profilepic,
+            profilePic:user.profilePic,
         });
         
     }catch(error){

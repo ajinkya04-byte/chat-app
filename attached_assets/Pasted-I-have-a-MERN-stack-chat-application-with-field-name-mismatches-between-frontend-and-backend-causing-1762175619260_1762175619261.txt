@@ -1,0 +1,46 @@
+I have a MERN stack chat application with field name mismatches between frontend and backend causing "Please fill in all fields" errors during signup.
+
+PROBLEM:
+- Frontend sends: fullName, username, password, confirmPassword, gender
+- Backend expects different field names
+- Getting validation errors even when all fields are filled
+
+TASKS TO FIX:
+
+1. UPDATE BACKEND USER MODEL (backend/models/userModel.js or backend/models/User.js):
+   - Change all field names to match frontend exactly
+   - Use: fullName (not fullname), username, password, gender, profilePic
+   - Keep validation rules and required fields
+   - Add timestamps
+
+2. UPDATE BACKEND AUTH CONTROLLER (backend/controllers/authController.js):
+   - In signup function: destructure { fullName, username, password, confirmPassword, gender }
+   - Check all validations use correct field names
+   - When creating new user, use: fullName, username, hashedPassword, gender, profilePic
+   - Return response with: _id, fullName, username, profilePic
+
+3. UPDATE MESSAGE MODEL (backend/models/messageModel.js):
+   - Use: senderId, receiverId, message (not text or content)
+   - Add timestamps
+
+4. UPDATE CONVERSATION MODEL if exists (backend/models/conversationModel.js):
+   - Use: participants array, messages array
+   - Add timestamps
+
+5. UPDATE ALL CONTROLLERS to use consistent field names:
+   - messageController.js: use senderId, receiverId, message
+   - userController.js: return fullName, username, profilePic
+
+6. VERIFY FRONTEND HOOKS are sending correct data:
+   - useSignup.js sends: fullName, username, password, confirmPassword, gender
+   - useLogin.js sends: username, password
+   - All hooks handle response with: _id, fullName, username, profilePic
+
+CONSISTENCY RULES:
+✅ USE EVERYWHERE: fullName (camelCase with capital N)
+✅ USE EVERYWHERE: profilePic (camelCase)
+✅ USE EVERYWHERE: senderId, receiverId (camelCase with Id)
+✅ Message content field: "message"
+❌ DON'T USE: fullname, profile_pic, sender, text, content
+
+After fixing, restart the backend server and test signup with all fields filled.
