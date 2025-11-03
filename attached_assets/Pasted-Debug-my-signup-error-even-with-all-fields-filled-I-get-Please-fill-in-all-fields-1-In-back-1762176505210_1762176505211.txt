@@ -1,0 +1,124 @@
+Debug my signup error - even with all fields filled, I get "Please fill in all fields"
+
+1. In backend/controllers/authController.js, at the START of signup function, add:
+console.log('📥 Received req.body:', req.body);
+console.log('📥 Content-Type:', req.headers['content-type']);
+
+text
+
+2. Check if express.json() middleware exists in server.js BEFORE routes:
+app.use(express.json()); // This MUST be before app.use('/api/auth', authRoutes)
+
+text
+
+3. In frontend useSignup.js, before fetch, add:
+console.log('📤 Frontend sending:', { fullName, username, password, confirmPassword, gender });
+
+text
+
+4. Restart both servers and show me:
+- Frontend console output (what's being sent)
+- Backend console output (what's being received)
+- The exact validation check that's failing
+
+Then I can tell you exactly what's wrong.
+🔧 Direct Fix Prompt (If You Want Immediate Solution)
+text
+Replace my entire signup function with this working version:
+
+backend/controllers/authController.js:
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const generateTokenAndSetCookie = require('../utils/generateToken');
+
+const signup = async (req, res) => {
+try {
+// Debug log
+console.log('Signup request body:', req.body);
+
+text
+const { fullName, username, password, confirmPassword, gender } = req.body;
+
+// Detailed validation
+if (!fullName || fullName.trim() === '') {
+  return res.status(400).json({ error: 'Full name is required' });
+}
+if (!username || username.trim() === '') {
+  return res.status(400).json({ error: 'Username is required' });
+}
+if (!password || password.trim() === '') {
+  return res.status(400).json({ error: 'Password is required' });
+}
+if (!confirmPassword || confirmPassword.trim() === '') {
+  return res.status(400).json({ error: 'Confirm password is required' });
+}
+if (!gender) {
+  return res.status(400).json({ error: 'Gender is required' });
+}
+
+// Check password match
+if (password !== confirmPassword) {
+  return res.status(400).json({ error: 'Passwords do not match' });
+}
+
+// Check password length
+if (password.length < 6) {
+  return res.status(400).json({ error: 'Password must be at least 6 characters' });
+}
+
+// Check if user exists
+const existingUser = await User.findOne({ username });
+if (existingUser) {
+  return res.status(400).json({ error: 'Username already exists' });
+}
+
+// Hash password
+const salt = await bcrypt.genSalt(10);
+const hashedPassword = await bcrypt.hash(password, salt);
+
+// Generate profile pic
+const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
+const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
+
+// Create user
+const newUser = new User({
+  fullName: fullName.trim(),
+  username: username.trim(),
+  password: hashedPassword,
+  gender,
+  profilePic: gender === 'male' ? boyProfilePic : girlProfilePic
+});
+
+await newUser.save();
+
+// Generate token
+generateTokenAndSetCookie(newUser._id, res);
+
+// Send response
+res.status(201).json({
+  _id: newUser._id,
+  fullName: newUser.fullName,
+  username: newUser.username,
+  profilePic: newUser.profilePic
+});
+} catch (error) {
+console.log('Error in signup controller:', error.message);
+res.status(500).json({ error: 'Internal server error' });
+}
+};
+
+module.exports = { signup };
+
+text
+
+And ensure server.js has:
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+text
+
+BEFORE your routes.
+🚨 Emergency One-Line Check Prompt
+text
+In backend/server.js, is app.use(express.json()) BEFORE app.use('/api/auth', authRoutes)? If not, move it above. This is likely the issue - backend can't parse JSON body.
