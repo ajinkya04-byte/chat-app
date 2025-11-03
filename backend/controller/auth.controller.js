@@ -4,7 +4,16 @@ import bcrypt from "bcryptjs";
 
 export const signup=async(req,res)=>{
     try{
+        console.log('📥 Received req.body:', req.body);
+        console.log('📥 Content-Type:', req.headers['content-type']);
+        
         const {fullName,username,password,confirmPassword,gender}=req.body;
+
+        // Validate all fields are present
+        if (!fullName || !username || !password || !confirmPassword || !gender) {
+            console.log('❌ Missing fields:', { fullName: !!fullName, username: !!username, password: !!password, confirmPassword: !!confirmPassword, gender: !!gender });
+            return res.status(400).json({error:"Please fill in all fields"});
+        }
 
         if (password!==confirmPassword) {
             return res.status(404).json({error:"Passwords dont match"})
